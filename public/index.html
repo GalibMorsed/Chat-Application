@@ -25,6 +25,7 @@
         </ul>
         <input type="text" id="new-room-name" placeholder="New Room Name" />
         <button id="create-room-btn">Create Room</button>
+        <button id="edit-room-btn">Edit Rooms</button>
       </div>
 
       <!-- Chat Area -->
@@ -110,6 +111,22 @@
           messagesContainer.innerHTML = "";
         }
       });
+
+      // function for 'join-message'
+      socket.on("join-message", (message) => {
+        const messageContainer = document.getElementById("messages");
+        if (messageContainer) {
+          const messageElement = document.createElement("div");
+          messageElement.textContent = message;
+          messageContainer.appendChild(messageElement);
+        } else {
+          console.error("Message container not found");
+        }
+      });
+      function joinRoom(roomName) {
+        socket.emit("join-room", roomName);
+      }
+      joinRoom("exampleRoom");
 
       // function to Send a message
       sendBtn.addEventListener("click", () => {

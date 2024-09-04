@@ -88,25 +88,28 @@ body {
 }
 
 #room-list ul li:hover {
-  background-color: #1abc9c;
+  background-color: #1abc9c9d;
 }
 
 #new-room-name,
-#create-room-btn {
+#create-room-btn,
+#edit-room-btn {
   width: 100%;
   margin: 10px 0;
   padding: 10px;
   box-sizing: border-box;
 }
 
-#create-room-btn {
+#create-room-btn,
+#edit-room-btn {
   background-color: #1abc9c;
   border: none;
   color: white;
   cursor: pointer;
 }
 
-#create-room-btn:hover {
+#create-room-btn:hover,
+#edit-room-btn:hover {
   background-color: #16a085;
 }
 

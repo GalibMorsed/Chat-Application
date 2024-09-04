@@ -45,7 +45,8 @@ io.on("connection", (socket) => {
       currentRoom = roomName;
       rooms[roomName].push(socket.username);
       socket.join(roomName);
-      io.to(roomName).emit("join-message", `${username} has joined the room.`);
+      const joinMessage = `${socket.username} has joined the room.`;
+      io.to(roomName).emit("join-message", joinMessage);
       io.emit("room-list", Object.keys(rooms));
     }
   });
