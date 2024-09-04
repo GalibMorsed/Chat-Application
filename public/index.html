@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Application</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <!-- For taking Username -->
+    <div id="username-overlay">
+      <div id="username-prompt">
+        <h2>Enter your username</h2>
+        <input type="text" id="username-input" placeholder="Username" />
+        <button id="username-submit-btn">Join Chat</button>
+      </div>
+    </div>
+
+    <div id="chat-container">
+      <!--Room List -->
+      <div id="room-list">
+        <h2>Chat Rooms</h2>
+        <ul id="rooms">
+          <!-- Chat rooms added here -->
+        </ul>
+        <input type="text" id="new-room-name" placeholder="New Room Name" />
+        <button id="create-room-btn">Create Room</button>
+      </div>
+
+      <!-- Chat Area -->
+      <div id="chat-area">
+        <div id="chat-header">
+          <h2 id="current-room">Select a Room</h2>
+          <span id="username-display"></span>
+        </div>
+        <div id="messages">
+          <!-- chat displayed here -->
+        </div>
+        <div id="message-input">
+          <input
+            type="text"
+            id="message-text"
+            placeholder="Type your message..."
+          />
+          <button id="send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      socket.on("connect", () => {
+        console.log("Connected to server");
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Disconnected from server");
+      });
+      const roomsList = document.getElementById("rooms");
+      const currentRoomDisplay = document.getElementById("current-room");
+      const messagesContainer = document.getElementById("messages");
+      const messageInput = document.getElementById("message-text");
+      const chatContainer = document.getElementById("chat-container");
+      const sendBtn = document.getElementById("send-btn");
+      const createRoomBtn = document.getElementById("create-room-btn");
+      const newRoomNameInput = document.getElementById("new-room-name");
+      const usernameOverlay = document.getElementById("username-overlay");
+      const usernameInput = document.getElementById("username-input");
+      const usernameSubmitBtn = document.getElementById("username-submit-btn");
+      const usernameDisplay = document.getElementById("username-display");
+
+      let currentRoom = null;
+      let username = null;
+
+      // function to set username
+      usernameSubmitBtn.addEventListener("click", () => {
+        const chosenUsername = usernameInput.value.trim();
+        if (chosenUsername) {
+          socket.emit("set-username", chosenUsername, (isAvailable) => {
+            if (isAvailable) {
+              username = chosenUsername;
+              usernameOverlay.style.display = "none";
+              chatContainer.style.display = "flex";
+              usernameDisplay.textContent = `Logged in as: ${username}`;
+            } else {
+              alert("Username already taken, please choose another.");
+            }
+          });
+        }
+      });
+
+      // function of Create a new room
+      createRoomBtn.addEventListener("click", () => {
+        const roomName = newRoomNameInput.value.trim();
+        if (roomName) {
+          socket.emit("create-room", roomName);
+          newRoomNameInput.value = "";
+        }
+      });
+
+      // function for Join a room
+      roomsList.addEventListener("click", (event) => {
+        if (event.target.tagName === "LI") {
+          currentRoom = event.target.textContent.trim();
+          console.log("Joining room:", currentRoom);
+          socket.emit("join-room", currentRoom);
+          currentRoomDisplay.textContent = `Current Room: ${currentRoom}`;
+          messagesContainer.innerHTML = "";
+        }
+      });
+
+      // function to Send a message
+      sendBtn.addEventListener("click", () => {
+        const message = messageInput.value.trim();
+        if (message && currentRoom) {
+          console.log(`Sending message to ${currentRoom}: ${message}`);
+          socket.emit("user-message", message);
+          messageInput.value = "";
+        }
+      });
+
+      // funtion to Receive messages
+      socket.on("message", ({ message, username }) => {
+        console.log(`Message received: ${username}: ${message}`);
+        const p = document.createElement("p");
+        p.textContent = `${username} :     ${message}`;
+        messagesContainer.appendChild(p);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      });
+
+      // this for Update room list
+      socket.on("room-list", (rooms) => {
+        roomsList.innerHTML = "";
+        rooms.forEach((room) => {
+          const li = document.createElement("li");
+          li.textContent = room;
+          roomsList.appendChild(li);
+        });
+      });
+    </script>
+  </body>
+</html>
